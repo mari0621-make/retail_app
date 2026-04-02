@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MyShop アプリ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #b52020;
+    --red-mid: #d63030;
+    --red-light: #fdeaea;
+    --yellow: #f5c842;
+    --text: #1a1a1a;
+    --text-muted: #888;
+    --bg: #ffffff;
+    --white: #fff;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f2f2f2; display: flex; justify-content: center; min-height: 100vh; }
+  .phone { width: 100%; max-width: 430px; min-height: 100vh; background: var(--bg); position: relative; overflow: hidden; }
+
+  .header { background: var(--red); padding: 52px 16px 14px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .logo { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 6px; }
+  .logo-dot { width: 10px; height: 10px; background: var(--yellow); border-radius: 50%; }
+  .header-icons { display: flex; gap: 10px; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .icon-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .notif-badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; border: 1.5px solid var(--red); }
+
+  .screen { display: none; padding-bottom: 80px; }
+  .screen.active { display: block; animation: fadeUp 0.25s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .member-section { padding: 14px 14px 0; }
+  .member-card { background: var(--red); border-radius: var(--radius); padding: 16px; position: relative; overflow: hidden; }
+  .member-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+  .member-label { color: rgba(255,255,255,0.6); font-size: 10px; margin-bottom: 4px; }
+  .member-id { color: #fff; font-size: 13px; font-weight: 500; margin-bottom: 12px; letter-spacing: 1px; }
+  .barcode-wrap { background: #fff; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 1.5px; height: 52px; margin-bottom: 10px; }
+  .bar { background: #111; border-radius: 1px; flex-shrink: 0; }
+  .member-footer { display: flex; justify-content: space-between; align-items: center; }
+  .kiri-badge { background: var(--yellow); color: #5a3a00; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .points { color: rgba(255,255,255,0.85); font-size: 11px; }
+  .points b { color: #fff; font-size: 13px; }
+
+  .section { padding: 16px 14px 0; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .section-more { font-size: 12px; color: var(--red-mid); font-weight: 500; cursor: pointer; }
+
+  .notice-card { background: var(--white); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.15s; }
+  .notice-card:active { transform: scale(0.98); }
+  .notice-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+  .notice-icon.yellow { background: #fff8e0; }
+  .notice-icon.blue { background: #e8f0fb; }
+  .notice-body { flex: 1; min-width: 0; }
+  .notice-tag { font-size: 10px; font-weight: 700; margin-bottom: 3px; }
+  .notice-tag.yellow { color: #b07800; }
+  .notice-tag.blue { color: #1a4a9c; }
+  .notice-text { font-size: 12px; color: #444; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .notice-date { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  .coupon-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 14px 4px; scrollbar-width: none; margin: 0 -14px; }
+  .coupon-scroll::-webkit-scrollbar { display: none; }
+  .coupon { flex-shrink: 0; width: 120px; background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s; }
+  .coupon:active { transform: scale(0.96); }
+  .coupon-head { padding: 5px 8px; text-align: center; font-size: 9px; font-weight: 700; color: #fff; }
+  .coupon-body { padding: 10px 10px 8px; }
+  .coupon-off { font-size: 22px; font-weight: 700; line-height: 1; }
+  .coupon-off span { font-size: 12px; }
+  .coupon-desc { font-size: 10px; color: #666; margin-top: 4px; line-height: 1.4; }
+  .coupon-exp { font-size: 9px; color: #bbb; margin-top: 6px; }
+  .coupon-btn { display: block; margin: 6px 10px 10px; background: var(--red-light); color: var(--red); font-size: 10px; font-weight: 700; text-align: center; padding: 5px; border-radius: 6px; border: none; cursor: pointer; width: calc(100% - 20px); font-family: 'Noto Sans JP', sans-serif; }
+
+  .campaign-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 14px 4px; scrollbar-width: none; margin: 0 -14px; }
+  .campaign-scroll::-webkit-scrollbar { display: none; }
+  .campaign-card { flex-shrink: 0; width: 200px; height: 110px; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.15s; }
+  .campaign-card:active { transform: scale(0.97); }
+  .campaign-bg { width: 100%; height: 100%; display: flex; align-items: flex-end; }
+  .campaign-bg.c1 { background: linear-gradient(135deg, #b52020 0%, #e05050 100%); }
+  .campaign-bg.c2 { background: linear-gradient(135deg, #8b1010 0%, #d63030 100%); }
+  .campaign-bg.c3 { background: linear-gradient(135deg, #854f0b 0%, #ef9f27 100%); }
+  .campaign-info { padding: 10px 12px; width: 100%; }
+  .campaign-tag { font-size: 9px; color: rgba(255,255,255,0.7); margin-bottom: 3px; }
+  .campaign-name { font-size: 13px; font-weight: 700; color: #fff; }
+
+  .banner { background: var(--white); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer; }
+  .banner-left { display: flex; gap: 12px; align-items: center; }
+  .banner-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--red-light); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .banner-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .banner-sub { font-size: 11px; color: var(--text-muted); }
+  .banner-arrow { color: var(--text-muted); font-size: 18px; }
+
+  /* クーポンページ */
+  .cp-header { background: var(--red); padding: 16px 14px 0; }
+  .cp-title { color: #fff; font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+  .cp-tabs { display: flex; border-radius: 10px 10px 0 0; overflow: hidden; }
+  .cp-tab { flex: 1; padding: 10px 4px; border: none; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.75); font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all 0.2s; }
+  .cp-tab .cp-tab-icon { font-size: 18px; }
+  .cp-tab.active { background: #fff; color: var(--red); border-radius: 10px 10px 0 0; }
+  .cp-body { padding: 14px; background: #f7f7f7; min-height: 400px; }
+  .cp-desc { background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; border-left: 4px solid var(--red); font-size: 12px; color: #444; line-height: 1.6; }
+  .cp-desc strong { color: var(--red); font-size: 13px; display: block; margin-bottom: 4px; }
+  .cp-recommend-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .cp-tag { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1.5px solid #ddd; background: #fff; color: #666; font-family: 'Noto Sans JP', sans-serif; }
+  .cp-tag.active { background: var(--red); color: #fff; border-color: var(--red); }
+  .cp-card { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+  .cp-card-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px dashed #eee; }
+  .cp-card-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .cp-card-name { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
+  .cp-card-count { font-size: 10px; color: var(--text-muted); }
+  .cp-card-body { padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+  .cp-card-discount { font-size: 32px; font-weight: 700; line-height: 1; flex-shrink: 0; }
+  .cp-card-discount span { font-size: 16px; }
+  .cp-card-info { flex: 1; }
+  .cp-card-desc { font-size: 12px; color: #555; line-height: 1.5; }
+  .cp-card-exp { font-size: 10px; color: #bbb; margin-top: 4px; }
+  .cp-card-footer { padding: 0 14px 12px; }
+  .cp-use-btn { width: 100%; padding: 10px; background: var(--red); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: opacity 0.15s; }
+  .cp-use-btn:active { opacity: 0.8; }
+  .cp-use-btn.used { background: #ddd; color: #999; cursor: default; }
+
+  .tabbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; height: 68px; background: var(--white); border-top: 0.5px solid #e0e0e0; display: flex; align-items: center; justify-content: space-around; padding-bottom: 8px; z-index: 200; }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; cursor: pointer; padding: 6px 0; border: none; background: none; font-family: 'Noto Sans JP', sans-serif; }
+  .tab-icon { font-size: 22px; }
+  .tab-label { font-size: 9px; font-weight: 500; color: #bbb; }
+  .tab.active .tab-label { color: var(--red); }
+  .tab-active-dot { width: 4px; height: 4px; background: var(--red); border-radius: 50%; margin-top: -1px; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="header">
+    <div class="logo"><div class="logo-dot"></div>MyShop</div>
+    <div class="header-icons">
+      <div style="position:relative">
+        <button class="icon-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+        <div class="notif-badge"></div>
+      </div>
+      <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ホーム画面 -->
+  <div class="screen active" id="screen-home">
+    <div class="member-section">
+      <div class="member-card">
+        <div class="member-label">会員番号</div>
+        <div class="member-id">7100 3456 XXXX XXXX</div>
+        <div class="barcode-wrap" id="barcode"></div>
+        <div class="member-footer">
+          <div class="kiri-badge">KiRiCaキャンペーン中</div>
+          <div class="points">残高 <b>1,250pt</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">お知らせ</div><div class="section-more">すべて見る ›</div></div>
+      <div class="notice-card"><div class="notice-icon yellow">🎉</div><div class="notice-body"><div class="notice-tag yellow">キャンペーン</div><div class="notice-text">夏のポイント2倍キャンペーン開催中！6月30日まで全品対象です。</div><div class="notice-date">2024.06.01</div></div></div>
+      <div class="notice-card"><div class="notice-icon blue">🎟</div><div class="notice-body"><div class="notice-tag blue">クーポン</div><div class="notice-text">アプリ限定クーポンが届きました。お早めにご確認ください。</div><div class="notice-date">2024.05.30</div></div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">クーポン</div><div class="section-more" onclick="switchTab('coupon')">すべて見る ›</div></div>
+      <div class="coupon-scroll">
+        <div class="coupon"><div class="coupon-head" style="background:#b52020">アプリ限定</div><div class="coupon-body"><div class="coupon-off" style="color:#b52020">10%<span>OFF</span></div><div class="coupon-desc">全品対象<br>500円以上で</div><div class="coupon-exp">〜6/30まで</div></div><button class="coupon-btn">つかう</button></div>
+        <div class="coupon"><div class="coupon-head" style="background:#c85a00">お買い得</div><div class="coupon-body"><div class="coupon-off" style="color:#c85a00">100円<span>引</span></div><div class="coupon-desc">飲料・食品<br>300円以上で</div><div class="coupon-exp">〜7/15まで</div></div><button class="coupon-btn" style="color:#c85a00;background:#fff3ec">つかう</button></div>
+        <div class="coupon"><div class="coupon-head" style="background:#6633cc">会員限定</div><div class="coupon-body"><div class="coupon-off" style="color:#6633cc">5倍</div><div class="coupon-desc">ポイント5倍<br>日用品対象</div><div class="coupon-exp">〜6/25まで</div></div><button class="coupon-btn" style="color:#6633cc;background:#f0ebff">つかう</button></div>
+        <div class="coupon"><div class="coupon-head" style="background:#b52020">タイムセール</div><div class="coupon-body"><div class="coupon-off" style="color:#b52020">20%<span>OFF</span></div><div class="coupon-desc">お菓子全品<br>本日のみ</div><div class="coupon-exp">本日のみ</div></div><button class="coupon-btn" style="color:#b52020;background:#fff0f0">つかう</button></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><div class="section-title">キャンペーン</div><div class="section-more">すべて見る ›</div></div>
+      <div class="campaign-scroll">
+        <div class="campaign-card"><div class="campaign-bg c1"><div class="campaign-info"><div class="campaign-tag">〜7月31日まで</div><div class="campaign-name">夏の感謝祭</div></div></div></div>
+        <div class="campaign-card"><div class="campaign-bg c2"><div class="campaign-info"><div class="campaign-tag">毎月5・15・25日</div><div class="campaign-name">ポイント2倍デー</div></div></div></div>
+        <div class="campaign-card"><div class="campaign-bg c3"><div class="campaign-info"><div class="campaign-tag">期間限定</div><div class="campaign-name">新商品フェア</div></div></div></div>
+      </div>
+    </div>
+    <div class="section" style="padding-bottom:16px">
+      <div class="section-header"><div class="section-title">バナー・広告</div></div>
+      <div class="banner"><div class="banner-left"><div class="banner-icon">🌿</div><div><div class="banner-title">夏の新商品が続々入荷中</div><div class="banner-sub">詳しくはこちらをチェック</div></div></div><div class="banner-arrow">›</div></div>
+    </div>
+  </div>
+
+  <!-- クーポン画面 -->
+  <div class="screen" id="screen-coupon">
+    <div class="cp-header">
+      <div class="cp-title">クーポン</div>
+      <div class="cp-tabs">
+        <button class="cp-tab active" onclick="switchCpTab('recommend',this)"><div class="cp-tab-icon">⭐</div>おすすめ</button>
+        <button class="cp-tab" onclick="switchCpTab('select',this)"><div class="cp-tab-icon">✋</div>選択</button>
+        <button class="cp-tab" onclick="switchCpTab('auto',this)"><div class="cp-tab-icon">⚡</div>自動</button>
+      </div>
+    </div>
+
+    <div class="cp-body" id="cp-recommend">
+      <div class="cp-desc"><strong>① おすすめクーポン</strong>セグメント配信に基づき、あなたにぴったりのクーポンを自動表示します。カテゴリで絞り込みができます。</div>
+      <div class="cp-recommend-row">
+        <button class="cp-tag active" onclick="filterTag(this)">すべて</button>
+        <button class="cp-tag" onclick="filterTag(this)">食品</button>
+        <button class="cp-tag" onclick="filterTag(this)">飲料</button>
+        <button class="cp-tag" onclick="filterTag(this)">日用品</button>
+        <button class="cp-tag" onclick="filterTag(this)">美容</button>
+      </div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#b52020">アプリ限定</div><div class="cp-card-name">全品対象クーポン</div><div class="cp-card-count">残り3日</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#b52020">10%<span>OFF</span></div><div class="cp-card-info"><div class="cp-card-desc">全品対象・500円以上のお買い物で使用可能</div><div class="cp-card-exp">有効期限：2024年6月30日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn" onclick="useCoupon(this)">レジでつかう</button></div>
+      </div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#c85a00">お買い得</div><div class="cp-card-name">飲料・食品クーポン</div><div class="cp-card-count">残り15日</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#c85a00">100円<span>引</span></div><div class="cp-card-info"><div class="cp-card-desc">飲料・食品対象・300円以上で使用可能</div><div class="cp-card-exp">有効期限：2024年7月15日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn" onclick="useCoupon(this)">レジでつかう</button></div>
+      </div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#6633cc">会員限定</div><div class="cp-card-name">日用品ポイントアップ</div><div class="cp-card-count">残り9日</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#6633cc">5<span>倍</span></div><div class="cp-card-info"><div class="cp-card-desc">日用品全品対象・ポイント5倍付与</div><div class="cp-card-exp">有効期限：2024年6月25日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn" onclick="useCoupon(this)">レジでつかう</button></div>
+      </div>
+    </div>
+
+    <div class="cp-body" id="cp-select" style="display:none">
+      <div class="cp-desc"><strong>② 選択クーポン</strong>お客様が手で選択し、任意のタイミングで使えます。期間中1回のみ有効。使用後は自動削除されます。</div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#b52020">タイムセール</div><div class="cp-card-name">お菓子全品セール</div><div class="cp-card-count">本日のみ</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#b52020">20%<span>OFF</span></div><div class="cp-card-info"><div class="cp-card-desc">お菓子全品対象・枚数限定</div><div class="cp-card-exp">有効期限：2024年6月10日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn" onclick="useCoupon(this)">レジでつかう</button></div>
+      </div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#0a7a4a">新商品</div><div class="cp-card-name">新商品トライアル</div><div class="cp-card-count">残り20日</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#0a7a4a">15%<span>OFF</span></div><div class="cp-card-info"><div class="cp-card-desc">新商品全品対象・初回購入限定</div><div class="cp-card-exp">有効期限：2024年6月30日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn" onclick="useCoupon(this)">レジでつかう</button></div>
+      </div>
+    </div>
+
+    <div class="cp-body" id="cp-auto" style="display:none">
+      <div class="cp-desc"><strong>③ 自動クーポン</strong>選択不要。対象商品購入時にレジで自動適用されます。複数同時使用も可能（費用はメーカー負担）。</div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#1a4a9c">全配信</div><div class="cp-card-name">レジ自動ポイントアップ</div><div class="cp-card-count">常時適用</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#1a4a9c">3<span>倍</span></div><div class="cp-card-info"><div class="cp-card-desc">対象商品購入時に自動でポイント3倍<br>※対象商品にマーク表示あり</div><div class="cp-card-exp">有効期限：2024年7月31日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn used" disabled>自動適用されます</button></div>
+      </div>
+      <div class="cp-card">
+        <div class="cp-card-header"><div class="cp-card-badge" style="background:#854f0b">メーカー</div><div class="cp-card-name">特定ブランド割引</div><div class="cp-card-count">残り5日</div></div>
+        <div class="cp-card-body"><div class="cp-card-discount" style="color:#854f0b">50円<span>引</span></div><div class="cp-card-info"><div class="cp-card-desc">対象ブランド商品に自動適用<br>複数点購入でも1回のみ</div><div class="cp-card-exp">有効期限：2024年6月15日</div></div></div>
+        <div class="cp-card-footer"><button class="cp-use-btn used" disabled>自動適用されます</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- タブバー -->
+  <div class="tabbar">
+    <button class="tab active" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label">ホーム</div><div class="tab-active-dot"></div></button>
+    <button class="tab" onclick="switchTab('coupon')"><div class="tab-icon">🎟</div><div class="tab-label">クーポン</div></button>
+    <button class="tab" onclick="switchTab('shop')"><div class="tab-icon">🛍</div><div class="tab-label">お買い物</div></button>
+    <button class="tab" onclick="switchTab('report')"><div class="tab-icon">📊</div><div class="tab-label">レポート</div></button>
+    <button class="tab" onclick="switchTab('ec')"><div class="tab-icon">🛒</div><div class="tab-label">EC購入</div></button>
+  </div>
+</div>
+
+<script>
+  const bc = document.getElementById('barcode');
+  [3,1,3,2,1,2,3,1,2,2,1,3,2,1,3,1,2,3,1,2,2,3,1,2,3,2,1,2,3,1,2,2,3,1,2,1,3,2,1,3].forEach(w => {
+    const b = document.createElement('div');
+    b.className = 'bar';
+    b.style.cssText = 'width:'+w+'px;height:32px;';
+    bc.appendChild(b);
+  });
+
+  const tabs = document.querySelectorAll('.tab');
+  const screenMap = { home:'screen-home', coupon:'screen-coupon' };
+
+  function switchTab(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const sid = screenMap[name] || 'screen-home';
+    document.getElementById(sid).classList.add('active');
+    tabs.forEach(t => { t.classList.remove('active'); const d = t.querySelector('.tab-active-dot'); if(d) d.remove(); });
+    const idx = {home:0,coupon:1,shop:2,report:3,ec:4}[name]||0;
+    tabs[idx].classList.add('active');
+    const dot = document.createElement('div');
+    dot.className = 'tab-active-dot';
+    tabs[idx].appendChild(dot);
+    window.scrollTo(0,0);
+  }
+
+  function switchCpTab(type, el) {
+    ['recommend','select','auto'].forEach(t => {
+      document.getElementById('cp-'+t).style.display = t===type ? 'block' : 'none';
+    });
+    document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function filterTag(el) {
+    document.querySelectorAll('.cp-tag').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function useCoupon(btn) {
+    if(btn.classList.contains('used')) return;
+    btn.textContent = '✓ 使用しました';
+    btn.classList.add('used');
+    btn.disabled = true;
+  }
+</script>
+</body>
+</html>
